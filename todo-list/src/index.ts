@@ -1,12 +1,21 @@
-import {ApplicationConfig, TodoListApplication} from './application';
+import {ApplicationConfig, ExpressServer} from './server';
+import {TodoListApplication} from './application';
+
+export {ApplicationConfig, ExpressServer, TodoListApplication};
 
 export * from './application';
 
 export async function main(options: ApplicationConfig = {}) {
+  const server = new ExpressServer(options);
+  await server.boot();
+  await server.start();
+
   const app = new TodoListApplication(options);
   await app.boot();
   await app.migrateSchema();
   await app.start();
+
+
 
   const url = app.restServer.url;
   console.log(`Server is running at ${url}`);
@@ -31,6 +40,7 @@ if (require.main === module) {
         // useful when used with OpenAPI-to-GraphQL to locate your application
         setServersFromRequest: true,
       },
+      listenOnStart: false,
     },
   };
   main(config).catch(err => {
